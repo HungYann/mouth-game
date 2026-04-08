@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>图片测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f0f9ff;
+        }
+
+        .image-test {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .image-container {
+            width: 60px;
+            height: 60px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-container.player {
+            transform: scale(1.05);
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .label {
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            color: #374151;
+            border-radius: 12px;
+            padding: 2px 6px;
+            border: 1px solid #d1d5db;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .label.player {
+            color: #fbbf24;
+            border-color: #fbbf24;
+        }
+
+        .you-label {
+            margin-top: 4px;
+            font-size: 12px;
+            color: #fbbf24;
+            font-weight: bold;
+            background: rgba(251, 191, 36, 0.1);
+            padding: 2px 8px;
+            border-radius: 8px;
+            border: 1px solid #fbbf24;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🎮 小牛马图片测试</h1>
+
+    <div class="image-test">
+        <div style="display: flex; flex-direction: column; align-items: center;">
+            <div class="image-container">
+                <img src="/close.png" alt="闭嘴">
+            </div>
+            <div style="height: 16px;"></div>
+        </div>
+        <div>
+            <strong>闭嘴状态 (close.png)</strong><br>
+            <span id="close-status">检测中...</span>
+        </div>
+    </div>
+
+    <div class="image-test">
+        <div style="display: flex; flex-direction: column; align-items: center;">
+            <div class="image-container">
+                <img src="/open.png" alt="张嘴">
+            </div>
+            <div style="height: 16px;"></div>
+        </div>
+        <div>
+            <strong>张嘴状态 (open.png)</strong><br>
+            <span id="open-status">检测中...</span>
+        </div>
+    </div>
+
+    <div class="image-test">
+        <div style="display: flex; flex-direction: column; align-items: center;">
+            <div class="image-container player">
+                <img src="/close.png" alt="玩家闭嘴">
+            </div>
+            <div style="height: 16px; display: flex; align-items: center;">
+                <div class="you-label">YOU</div>
+            </div>
+        </div>
+        <div>
+            <strong>玩家状态示例</strong><br>
+            稍微放大 + YOU标签
+        </div>
+    </div>
+
+    <script>
+        // 测试图片加载
+        function testImage(src, statusId) {
+            const img = new Image();
+            const statusEl = document.getElementById(statusId);
+
+            img.onload = () => {
+                statusEl.innerHTML = '✅ 加载成功';
+                statusEl.style.color = 'green';
+            };
+
+            img.onerror = () => {
+                statusEl.innerHTML = '❌ 加载失败';
+                statusEl.style.color = 'red';
+            };
+
+            img.src = src;
+        }
+
+        testImage('/close.png', 'close-status');
+        testImage('/open.png', 'open-status');
+    </script>
+</body>
+
+</html>

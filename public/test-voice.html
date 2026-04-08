@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>声音测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f0f9ff;
+        }
+        .test-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .test-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background-color 0.2s;
+        }
+        .play-btn {
+            background-color: #10b981;
+            color: white;
+        }
+        .play-btn:hover {
+            background-color: #059669;
+        }
+        .stop-btn {
+            background-color: #ef4444;
+            color: white;
+        }
+        .stop-btn:hover {
+            background-color: #dc2626;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .error {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎵 张嘴声音测试</h1>
+        
+        <div class="test-item">
+            <h3>音频文件检测</h3>
+            <p>检测 voice1.MP3 文件是否存在并可播放</p>
+            <div id="file-status" class="status">检测中...</div>
+        </div>
+
+        <div class="test-item">
+            <h3>手动播放测试</h3>
+            <p>手动控制声音播放和停止</p>
+            <button class="play-btn" onclick="playVoice()">🎵 播放张嘴声音</button>
+            <button class="stop-btn" onclick="stopVoice()">🔇 停止声音</button>
+            <div id="manual-status" class="status">等待操作...</div>
+        </div>
+
+        <div class="test-item">
+            <h3>循环播放测试</h3>
+            <p>测试声音的循环播放功能</p>
+            <button class="play-btn" onclick="playLoop()">🔄 循环播放</button>
+            <button class="stop-btn" onclick="stopLoop()">⏹️ 停止循环</button>
+            <div id="loop-status" class="status">等待操作...</div>
+        </div>
+    </div>
+
+    <script>
+        let audio = null;
+        let loopAudio = null;
+
+        // 检测音频文件
+        function checkAudioFile() {
+            const testAudio = new Audio('/sounds/voice1.MP3');
+            const statusEl = document.getElementById('file-status');
+            
+            testAudio.addEventListener('canplay', () => {
+                statusEl.textContent = '✅ 音频文件加载成功，可以播放';
+                statusEl.className = 'status success';
+            });
+            
+            testAudio.addEventListener('error', () => {
+                statusEl.textContent = '❌ 音频文件加载失败，请检查文件路径';
+                statusEl.className = 'status error';
+            });
+            
+            testAudio.load();
+        }
+
+        // 播放声音
+        function playVoice() {
+            if (!audio) {
+                audio = new Audio('/sounds/voice1.MP3');
+                audio.volume = 0.6;
+            }
+            
+            const statusEl = document.getElementById('manual-status');
+            
+            audio.currentTime = 0;
+            audio.play().then(() => {
+                statusEl.textContent = '🎵 正在播放张嘴声音';
+                statusEl.className = 'status success';
+            }).catch(error => {
+                statusEl.textContent = '❌ 播放失败: ' + error.message;
+                statusEl.className = 'status error';
+            });
+        }
+
+        // 停止声音
+        function stopVoice() {
+            if (audio) {
+                audio.pause();
+                audio.currentTime = 0;
+                
+                const statusEl = document.getElementById('manual-status');
+                statusEl.textContent = '⏹️ 声音已停止';
+                statusEl.className = 'status';
+            }
+        }
+
+        // 循环播放
+        function playLoop() {
+            if (!loopAudio) {
+                loopAudio = new Audio('/sounds/voice1.MP3');
+                loopAudio.volume = 0.6;
+                loopAudio.loop = true;
+            }
+            
+            const statusEl = document.getElementById('loop-status');
+            
+            loopAudio.currentTime = 0;
+            loopAudio.play().then(() => {
+                statusEl.textContent = '🔄 正在循环播放';
+                statusEl.className = 'status success';
+            }).catch(error => {
+                statusEl.textContent = '❌ 循环播放失败: ' + error.message;
+                statusEl.className = 'status error';
+            });
+        }
+
+        // 停止循环
+        function stopLoop() {
+            if (loopAudio) {
+                loopAudio.pause();
+                loopAudio.currentTime = 0;
+                
+                const statusEl = document.getElementById('loop-status');
+                statusEl.textContent = '⏹️ 循环播放已停止';
+                statusEl.className = 'status';
+            }
+        }
+
+        // 页面加载时检测音频文件
+        window.addEventListener('load', checkAudioFile);
+    </script>
+</body>
+</html>

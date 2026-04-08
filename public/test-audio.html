@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>音频测试</title>
+</head>
+<body>
+    <h1>音频文件测试</h1>
+    <div id="results"></div>
+    
+    <script>
+        const musicPaths = ['/bgm.MP3', '/bgm.mp3', '/bgm.wav', '/bgm.ogg'];
+        const results = document.getElementById('results');
+        
+        musicPaths.forEach(path => {
+            const audio = new Audio();
+            const div = document.createElement('div');
+            div.innerHTML = `测试 ${path}: `;
+            
+            audio.addEventListener('canplay', () => {
+                div.innerHTML += '✅ 可以播放';
+                div.style.color = 'green';
+            });
+            
+            audio.addEventListener('error', () => {
+                div.innerHTML += '❌ 加载失败';
+                div.style.color = 'red';
+            });
+            
+            audio.src = path;
+            results.appendChild(div);
+        });
+    </script>
+</body>
+</html>
