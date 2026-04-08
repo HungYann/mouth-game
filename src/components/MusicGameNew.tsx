@@ -43,8 +43,6 @@ interface LeaderboardEntry {
   highScore: number
 }
 
-const LEADERBOARD_STORAGE_KEY = 'mouth-game.leaderboard.v1'
-
 function MusicGame() {
   const {
     gameState,
@@ -102,45 +100,35 @@ function MusicGame() {
     panel: '#f7ecdd'
   }
 
-  const saveLeaderboard = useCallback((entries: LeaderboardEntry[]) => {
-    try {
-      localStorage.setItem(LEADERBOARD_STORAGE_KEY, JSON.stringify(entries))
-    } catch (error) {
-      console.error('保存排行榜失败:', error)
-    }
-  }, [])
-
   const upsertLeaderboard = useCallback(
-    (nickname: string, score: number) => {
-      setLeaderboard(prev => {
-        const normalizedNickname = nickname.trim()
-        if (!normalizedNickname) return prev
+    async (nickname: string, score: number) => {
+      try {
+        const response = await fetch('/api/leaderboard', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            nickname,
+            score
+          })
+        })
 
-        const next = [...prev]
-        const existingIndex = next.findIndex(
-          item => item.nickname === normalizedNickname
-        )
-
-        if (existingIndex >= 0) {
-          next[existingIndex] = {
-            ...next[existingIndex],
-            highScore: Math.max(next[existingIndex].highScore, score)
-          }
-        } else {
-          next.push({ nickname: normalizedNickname, highScore: score })
+        if (!response.ok) {
+          throw new Error(`更新排行榜失败: ${response.status}`)
         }
 
-        next.sort(
-          (a, b) =>
-            b.highScore - a.highScore || a.nickname.localeCompare(b.nickname)
-        )
-
-        const top10 = next.slice(0, 10)
-        saveLeaderboard(top10)
-        return top10
-      })
+        const data = (await response.json()) as {
+          leaderboard?: LeaderboardEntry[]
+        }
+        if (Array.isArray(data.leaderboard)) {
+          setLeaderboard(data.leaderboard)
+        }
+      } catch (error) {
+        console.error('更新排行榜失败:', error)
+      }
     },
-    [saveLeaderboard]
+    []
   )
 
   const handleStartGameWithNickname = async () => {
@@ -164,35 +152,27 @@ function MusicGame() {
   }
 
   useEffect(() => {
-    try {
-      const rawData = localStorage.getItem(LEADERBOARD_STORAGE_KEY)
-      if (!rawData) return
+    const loadLeaderboard = async () => {
+      try {
+        const response = await fetch('/api/leaderboard', {
+          cache: 'no-store'
+        })
+        if (!response.ok) {
+          throw new Error(`读取排行榜失败: ${response.status}`)
+        }
 
-      const parsed = JSON.parse(rawData)
-      if (!Array.isArray(parsed)) return
-
-      const sanitized = parsed
-        .filter(
-          item =>
-            item &&
-            typeof item.nickname === 'string' &&
-            typeof item.highScore === 'number'
-        )
-        .map(item => ({
-          nickname: item.nickname.trim(),
-          highScore: Math.max(0, Math.floor(item.highScore))
-        }))
-        .filter(item => item.nickname.length > 0)
-        .sort(
-          (a, b) =>
-            b.highScore - a.highScore || a.nickname.localeCompare(b.nickname)
-        )
-        .slice(0, 10)
-
-      setLeaderboard(sanitized)
-    } catch (error) {
-      console.error('读取排行榜失败:', error)
+        const data = (await response.json()) as {
+          leaderboard?: LeaderboardEntry[]
+        }
+        if (Array.isArray(data.leaderboard)) {
+          setLeaderboard(data.leaderboard)
+        }
+      } catch (error) {
+        console.error('读取排行榜失败:', error)
+      }
     }
+
+    void loadLeaderboard()
   }, [])
 
   // 进入结算页后记录当前昵称的历史最高分
@@ -207,7 +187,7 @@ function MusicGame() {
     }
 
     lastRecordedGameOverRef.current = snapshotKey
-    upsertLeaderboard(currentNickname, gameState.score)
+    void upsertLeaderboard(currentNickname, gameState.score)
   }, [
     gameState.gamePhase,
     gameState.score,
